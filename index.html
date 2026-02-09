@@ -1,48 +1,185 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Notion Launcher</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 40px;
-      text-align: center;
-      font-size: 1.5rem;
-    }
-    input {
-      width: 95%;
-      padding: 20px;
-      font-size: 1.5rem;
-    }
-    button {
-      padding: 20px 40px;
-      font-size: 1.5rem;
-      margin-top: 20px;
-    }
-  </style>
-  <script>
-    window.onload = () => {
-      const savedUrl = localStorage.getItem('savedUrl');
-      if (savedUrl) {
-        window.location.href = savedUrl;
-      }
-    };
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY LESSON NOTE</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --error-color: #FF3B30;
+        }
 
-    function saveAndRedirect() {
-      const input = document.getElementById('urlInput');
-      const url = input.value.trim();
-      if (url) {
-        localStorage.setItem('savedUrl', url);
-        window.location.href = url;
-      }
-    }
-  </script>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 32px 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h1 { font-size: 1.4rem; margin-bottom: 12px; font-weight: 700; }
+        
+        .instruction {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .highlight-url {
+            display: block;
+            margin-top: 8px;
+            color: var(--primary-color);
+            word-break: break-all;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 1.5px solid #E5E5EA;
+            border-radius: 12px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            appearance: none; /* iOS対策 */
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active { opacity: 0.7; }
+
+        .error-msg {
+            display: none;
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: -8px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .reset-area {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #F2F2F7;
+        }
+
+        .reset-link {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #loading { font-weight: 500; color: var(--text-sub); }
+    </style>
 </head>
 <body>
-  <h2>🔗 はじめての方はURLを入力してください</h2>
-  <input type="text" id="urlInput" placeholder="https://www.notion.so/your-page-url"><br><br>
-  <button onclick="saveAndRedirect()">保存して開く</button>
+
+<div class="container">
+    <div id="app-content">
+        <div id="loading">読み込み中...</div>
+        
+        <div id="setup-form" style="display:none;">
+            <h1>My Lesson Note</h1>
+            <div class="instruction">
+                担当講師から送られたあなた専用のレッスンノートのURLを入力してください。
+                <span class="highlight-url">例：https://hatsuongym.notion.site/...</span>
+            </div>
+            
+            <input type="url" id="notionUrl" placeholder="URLをここにペースト" />
+            <div id="errorMsg" class="error-msg">⚠︎ 正しいNotion URLを入力してください</div>
+            
+            <button onclick="saveAndGo()">ノートを開く</button>
+        </div>
+    </div>
+    
+    <div id="reset-area" class="reset-area" style="display:none;">
+        <span class="reset-link" onclick="resetSetting()">URLを登録し直す</span>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'user_notion_url';
+    const setupForm = document.getElementById('setup-form');
+    const loading = document.getElementById('loading');
+    const errorMsg = document.getElementById('errorMsg');
+    const resetArea = document.getElementById('reset-area');
+
+    window.onload = function() {
+        const savedUrl = localStorage.getItem(STORAGE_KEY);
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 保存済みかつリセット指示がない場合は自動転送
+        if (savedUrl && !urlParams.get('reset')) {
+            window.location.replace(savedUrl);
+        } else {
+            loading.style.display = 'none';
+            setupForm.style.display = 'block';
+            // すでに保存されているURLがある場合のみ、リセットリンクを表示
+            if(savedUrl) resetArea.style.display = 'block';
+        }
+    };
+
+    function saveAndGo() {
+        const urlInput = document.getElementById('notionUrl').value.trim();
+        
+        // バリデーション: httpsから始まり、かつnotionの文字列を含むか
+        if (urlInput.startsWith('https://') && urlInput.toLowerCase().includes('notion')) {
+            localStorage.setItem(STORAGE_KEY, urlInput);
+            errorMsg.style.display = 'none';
+            window.location.replace(urlInput);
+        } else {
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function resetSetting() {
+        if(confirm('登録されているURLを消去して、新しく登録し直しますか？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.href = window.location.pathname; // パラメータを消して再読み込み
+        }
+    }
+</script>
+
 </body>
 </html>
