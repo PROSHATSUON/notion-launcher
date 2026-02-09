@@ -49,11 +49,18 @@
 
         .highlight-url {
             display: block;
-            margin-top: 8px;
+            margin: 8px 0;
             color: var(--primary-color);
             word-break: break-all;
             font-size: 0.85rem;
             font-weight: 500;
+        }
+
+        .contact-info {
+            display: block;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-sub);
         }
 
         input {
@@ -65,7 +72,7 @@
             font-size: 1rem;
             box-sizing: border-box;
             transition: border-color 0.2s;
-            appearance: none; /* iOS対策 */
+            appearance: none;
         }
 
         input:focus {
@@ -95,6 +102,7 @@
             margin-top: -8px;
             margin-bottom: 16px;
             text-align: left;
+            line-height: 1.4;
         }
 
         .reset-area {
@@ -123,11 +131,15 @@
             <h1>My Lesson Note</h1>
             <div class="instruction">
                 担当講師から送られたあなた専用のレッスンノートのURLを入力してください。
-                <span class="highlight-url">例：https://hatsuongym.notion.site/...</span>
+                <span class="highlight-url">例：https://www.notion.so/hatsuongym/...</span>
+                <span class="contact-info">※ リンクがわからない場合は担当講師にお問い合わせください。</span>
             </div>
             
             <input type="url" id="notionUrl" placeholder="URLをここにペースト" />
-            <div id="errorMsg" class="error-msg">⚠︎ 正しいNotion URLを入力してください</div>
+            <div id="errorMsg" class="error-msg">
+                ⚠︎ 指定のURL以外は登録できません。<br>
+                「https://www.notion.so/hatsuongym/」から始まるURLを入力してください。
+            </div>
             
             <button onclick="saveAndGo()">ノートを開く</button>
         </div>
@@ -140,6 +152,8 @@
 
 <script>
     const STORAGE_KEY = 'user_notion_url';
+    const REQUIRED_PREFIX = 'https://www.notion.so/hatsuongym/';
+
     const setupForm = document.getElementById('setup-form');
     const loading = document.getElementById('loading');
     const errorMsg = document.getElementById('errorMsg');
@@ -149,13 +163,11 @@
         const savedUrl = localStorage.getItem(STORAGE_KEY);
         const urlParams = new URLSearchParams(window.location.search);
         
-        // 保存済みかつリセット指示がない場合は自動転送
         if (savedUrl && !urlParams.get('reset')) {
             window.location.replace(savedUrl);
         } else {
             loading.style.display = 'none';
             setupForm.style.display = 'block';
-            // すでに保存されているURLがある場合のみ、リセットリンクを表示
             if(savedUrl) resetArea.style.display = 'block';
         }
     };
@@ -163,8 +175,7 @@
     function saveAndGo() {
         const urlInput = document.getElementById('notionUrl').value.trim();
         
-        // バリデーション: httpsから始まり、かつnotionの文字列を含むか
-        if (urlInput.startsWith('https://') && urlInput.toLowerCase().includes('notion')) {
+        if (urlInput.startsWith(REQUIRED_PREFIX)) {
             localStorage.setItem(STORAGE_KEY, urlInput);
             errorMsg.style.display = 'none';
             window.location.replace(urlInput);
@@ -176,7 +187,7 @@
     function resetSetting() {
         if(confirm('登録されているURLを消去して、新しく登録し直しますか？')) {
             localStorage.removeItem(STORAGE_KEY);
-            location.href = window.location.pathname; // パラメータを消して再読み込み
+            location.href = window.location.pathname;
         }
     }
 </script>
