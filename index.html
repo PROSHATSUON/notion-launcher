@@ -131,14 +131,14 @@
             <h1>My Lesson Note</h1>
             <div class="instruction">
                 担当講師から送られたあなた専用のレッスンノートのURLを入力してください。
-                <span class="highlight-url">例：https://www.notion.so/hatsuongym/...</span>
+                <span class="highlight-url">例：https://hatsuongym.notion.site/...</span>
                 <span class="contact-info">※ リンクがわからない場合は担当講師にお問い合わせください。</span>
             </div>
             
             <input type="url" id="notionUrl" placeholder="URLをここにペースト" />
             <div id="errorMsg" class="error-msg">
                 ⚠︎ 指定のURL以外は登録できません。<br>
-                「https://www.notion.so/hatsuongym/」から始まるURLを入力してください。
+                「https://hatsuongym.notion.site/」から始まるURLを入力してください。
             </div>
             
             <button onclick="saveAndGo()">ノートを開く</button>
@@ -152,7 +152,12 @@
 
 <script>
     const STORAGE_KEY = 'user_notion_url';
-    const REQUIRED_PREFIX = 'https://www.notion.so/hatsuongym/';
+    
+    // 許可するURLのパターン
+    const ALLOWED_PREFIXES = [
+        'https://hatsuongym.notion.site/',
+        'https://www.notion.so/hatsuongym/'
+    ];
 
     const setupForm = document.getElementById('setup-form');
     const loading = document.getElementById('loading');
@@ -175,7 +180,10 @@
     function saveAndGo() {
         const urlInput = document.getElementById('notionUrl').value.trim();
         
-        if (urlInput.startsWith(REQUIRED_PREFIX)) {
+        // いずれかの許可パターンに合致するかチェック
+        const isAllowed = ALLOWED_PREFIXES.some(prefix => urlInput.startsWith(prefix));
+        
+        if (isAllowed) {
             localStorage.setItem(STORAGE_KEY, urlInput);
             errorMsg.style.display = 'none';
             window.location.replace(urlInput);
