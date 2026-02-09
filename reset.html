@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定リセット | MY LESSON NOTE</title>
+    <style>
+        :root {
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --danger-color: #FF3B30;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 350px;
+            padding: 32px 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h1 { font-size: 1.2rem; margin-bottom: 16px; }
+        p { font-size: 0.9rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 24px; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>設定のリセット</h1>
+    <p>現在登録されているレッスンノートのURLを解除します。よろしいですか？</p>
+    
+    <button onclick="doReset()">登録を解除する</button>
+    
+    <a href="index.html" class="back-link">戻る</a>
+</div>
+
+<script>
+    function doReset() {
+        if(confirm('登録を解除して、新しいURLを入力できる状態に戻します。')) {
+            localStorage.removeItem('user_notion_url');
+            alert('解除しました。リッチメニューから再度登録してください。');
+            // メインページ（入力画面）へ飛ばす
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+
+</body>
+</html>
